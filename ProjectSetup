@@ -1,0 +1,36 @@
+teacher-management-app/
+│── 📂 android/                # Native Android-specific files
+│── 📂 ios/                    # Native iOS-specific files
+│── 📂 assets/                 # Images, icons, fonts, etc.
+│── 📂 src/                    # Main application source code
+│   │── 📂 api/                 # API calls (Axios, Fetch)
+│   │── 📂 components/          # Reusable UI components
+│   │── 📂 hooks/               # Custom hooks (e.g., useAuth, useLocation)
+│   │── 📂 navigation/          # Navigation setup (React Navigation)
+│   │── 📂 screens/             # App screens
+│   │   │── 📂 Auth/            # Login, Register, OTP, Social Login
+│   │   │── 📂 Dashboard/       # Main teacher/admin dashboard
+│   │   │── 📂 Attendance/      # Check-in, check-out, leave, regularization
+│   │   │── 📂 Profile/         # Profile management, employment history
+│   │   │── 📂 Schedule/        # Timetable, shifts, lecture management
+│   │   │── 📂 Notifications/   # Announcements, reminders
+│   │── 📂 services/            # Location, Notifications, Background tasks
+│   │── 📂 store/               # ✅ Redux Toolkit setup here
+│   │   │── store.js             # Configure Redux store
+│   │   │── authSlice.js         # Authentication (Login, Logout, Role-based access)
+│   │   │── attendanceSlice.js   # Attendance (Check-in, Check-out, Leave)
+│   │   │── shiftSlice.js        # Shift & timetable management
+│   │   │── notificationSlice.js # Announcements, reminders
+│   │── 📂 styles/              # Global styles and themes
+│   │── 📂 utils/               # Helper functions
+│   │── App.js                  # Root Component
+│   │── index.js                # Entry Point (Wrap App with Redux Provider)
+│── .env                        # Environment Variables
+│── package.json                # Dependencies & Scripts
+│── babel.config.js             # Babel Configurations
+│── metro.config.js             # Metro Bundler Configuration
+│── README.md      
+
+
+
+backend can't directly send Notification in the react native frontend thats why we used firebase for send an notifications

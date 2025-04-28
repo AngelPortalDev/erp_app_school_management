@@ -1,0 +1,11 @@
+@react-native-async-storage/async-storage - used for store data locally
+@react-native-community/datetimepicker -  used for date and time picker
+@react-native-firebase/app -  used for integrate notification system
+@react-native-firebase/messaging - used for integrate notification system
+@react-navigation/bottom-tabs - used for navigation of our application
+@react-navigation/native - used for navigation of our application
+@react-navigation/native-stack - used for navigation of our application
+@reduxjs/toolkit -  used for state managment mean globally store our application & fetch it any component
+axios -  used for api calling
+buffer - used for converting our base 64 value
+formik, Yup -  for form validation
