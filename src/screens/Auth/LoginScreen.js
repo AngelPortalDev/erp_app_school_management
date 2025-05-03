@@ -39,53 +39,51 @@ const LoginScreen = ({navigation}) => {
       .required('Password is required'),
   });
 
-  // Updated handleSubmit to show the Alert
   const handleLogin = async values => {
     const {username, password} = values;
-    console.log(values);
     try {
-      await dispatch(loginUser({username, password})).unwrap();
+      const result = await dispatch(loginUser({username, password})).unwrap();
+
       const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        return 'No Authentication';
+      if (!token){
+        throw new Error('No token found');
       }
+
       const fcmToken = await messaging().getToken();
-      console.log('fcmToken', fcmToken);
-      const response = await Axios.post(
+      await Axios.post(
         `${BASE_URL}/register-device/`,
         {fcm_token: fcmToken},
         {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
+          headers: {Authorization: `Token ${token}`},
         },
       );
-      // Alert.alert('Login Successfull', 'You have logged in Successfull');
-      console.log('response', response);
+
       navigation.replace('BottomTab');
     } catch (err) {
       console.log('Login Error:', err);
+      // Alert.alert('Login Failed', 'Please check your credentials and try again.');
     }
   };
+  
 
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      Alert.alert('New Notification', remoteMessage.notification?.body || 'You received a new message.');
     });
-
     return unsubscribe;
   }, []);
 
   return (
-    <ScrollView keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
       <SafeAreaView style={styles.container}>
         <View style={styles.card}>
           <Image
-            source={require('../../../assets/AuthenticationImages/Login-01.png')}
+            source={require('../../../assets/AuthenticationImages/Login-10.jpg')}
             style={styles.logo}
+            resizeMode="contain"
           />
-          <Text style={styles.heading}>Log In</Text>
-          <Text style={styles.subText}>Welcome back! Log in to continue</Text>
+          <Text style={styles.heading}>Welcome Back 👋</Text>
+          <Text style={styles.subText}>Log in to your account to continue</Text>
 
           <Formik
             initialValues={initialFormValues}
@@ -103,12 +101,14 @@ const LoginScreen = ({navigation}) => {
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Email</Text>
                   <TextInput
-                    placeholder="Enter your email "
+                    placeholder="Enter your email"
                     placeholderTextColor="#aaa"
                     style={styles.textInput}
                     onChangeText={handleChange('username')}
                     onBlur={handleBlur('username')}
                     value={values.username}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
                   />
                   {touched.username && errors.username && (
                     <Text style={styles.errorText}>{errors.username}</Text>
@@ -122,18 +122,18 @@ const LoginScreen = ({navigation}) => {
                       placeholder="Enter your password"
                       placeholderTextColor="#aaa"
                       secureTextEntry={!showPassword}
-                      style={styles.textInput}
+                      style={[styles.textInput, {paddingRight: 40}]}
                       onChangeText={handleChange('password')}
                       onBlur={handleBlur('password')}
                       value={values.password}
                     />
                     <TouchableOpacity
+                      style={styles.eyeIcon}
                       onPress={() => setShowPassword(!showPassword)}>
                       <Icon
                         name={showPassword ? 'eye-slash' : 'eye'}
                         size={20}
-                        color="#aaa"
-                        style={styles.eyeIcon}
+                        color="#777"
                       />
                     </TouchableOpacity>
                   </View>
@@ -145,10 +145,15 @@ const LoginScreen = ({navigation}) => {
                 <TouchableOpacity
                   style={styles.forgotPassContainer}
                   onPress={() => navigation.navigate('Forgot Password')}>
-                  <Text style={styles.forgotPassstyle}>Forgot Password ?</Text>
+                  <Text style={styles.forgotPassText}>Forgot Password?</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                  <Text style={styles.buttonText}>Log In</Text>
+
+                <TouchableOpacity style={styles.button} disabled={loading} onPress={handleSubmit}>
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.buttonText}>Log In</Text>
+                  )}
                 </TouchableOpacity>
               </>
             )}
@@ -160,103 +165,93 @@ const LoginScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: 30,
+    backgroundColor: '#f9f9f9',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
-    width: 350,
-    padding: 25,
-    borderRadius: 15,
+    width: '90%',
+    padding: 30,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: {width: 0, height: 3},
+    shadowRadius: 10,
     alignItems: 'center',
   },
-  forgotPassContainer: {
-    alignItems: 'flex-end',
-    width: '100%',
-  },
-  forgotPassstyle: {
-    color: '#2b61ff',
-    fontWeight: '600',
-    fontSize: 14,
-    marginBottom: 10,
-  },
   logo: {
-    height: 200,
-    width: 200,
-    marginBottom: 10,
+    height: 160,
+    width: 160,
+    marginBottom: 20,
   },
   heading: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'left',
+    color: '#1e1e1e',
+    marginBottom: 5,
   },
   subText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 30,
-    textAlign: 'right',
+    fontSize: 15,
+    color: '#777',
+    marginBottom: 25,
   },
   inputContainer: {
     width: '100%',
     marginBottom: 15,
   },
   label: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#444',
+    marginBottom: 6,
     marginLeft: 5,
   },
   textInput: {
     width: '100%',
     height: 50,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 25,
+    borderRadius: 12,
+    backgroundColor: '#f2f2f2',
     paddingHorizontal: 15,
-    fontSize: 16,
-    backgroundColor: '#fafafa',
+    fontSize: 15,
     color: '#333',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: {width: 0, height: 3},
-    shadowRadius: 5,
-  },
-  button: {
-    width: '100%',
-    backgroundColor: '#bc0f2c',
-    paddingVertical: 12,
-    borderRadius: 25,
-    alignItems: 'center',
-    marginTop: 10,
   },
   passwordWrapper: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
     position: 'relative',
   },
   eyeIcon: {
     position: 'absolute',
-    bottom: -9,
     right: 15,
+    top: 14,
+  },
+  forgotPassContainer: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginBottom: 20,
+  },
+  forgotPassText: {
+    color: '#2b61ff',
+    fontWeight: '500',
+    fontSize: 13,
+  },
+  button: {
+    width: '100%',
+    backgroundColor: '#bc0f2c',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
-  },
-  footerText: {
-    marginTop: 15,
-    fontSize: 14,
-    color: '#555',
-  },
-  linkText: {
-    color: '#2b61ff',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   errorText: {
     color: 'red',

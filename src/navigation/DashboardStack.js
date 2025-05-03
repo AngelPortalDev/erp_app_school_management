@@ -16,6 +16,7 @@ import ApplyLeave from '../screens/Leave/ApplyLeave';
 import AssignClassesScreen from '../screens/Schedule/AssignClassesScreen';
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 import DisplayNotification from '../screens/Notifications/DisplayNotification';
+import CustomCamera from '../screens/cameras/CustomCamera';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 

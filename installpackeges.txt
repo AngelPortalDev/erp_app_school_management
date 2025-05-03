@@ -9,3 +9,18 @@
 axios -  used for api calling
 buffer - used for converting our base 64 value
 formik, Yup -  for form validation
+
+
+
+
+
+
+
+old packages deleted
+
+    "@react-native-firebase/app": "^21.14.0",
+    "@react-native-firebase/messaging": "^21.14.0",
+
+
+removed from Androidanifest.xml
+    android:roundIcon="@mipmap/ic_launcher_round"

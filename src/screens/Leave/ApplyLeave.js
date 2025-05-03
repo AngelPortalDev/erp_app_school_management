@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Platform,
   Alert,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -72,11 +73,7 @@ const ApplyLeave = ({navigation}) => {
       console.log('response', response);
       Alert.alert('Success', 'Leave applied successfully.');
       setLoading(false);
-      navigation.navigate(
-        'Leave',{
-
-        }
-      );
+      navigation.navigate('Leave', {});
     } catch (err) {
       setLoading(false);
       if (err.response) {
@@ -93,93 +90,107 @@ const ApplyLeave = ({navigation}) => {
     }
   };
 
+  const handleReasonChange = text => {
+    if (text.length > 200) {
+      Alert.alert(
+        'Character Limit Exceeded',
+        'Reason must not exceed 200 characters.',
+      );
+      return;
+    }
+    setReason(text);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Reason for Leave</Text>
-      <TextInput
-        style={styles.textInput}
-        placeholder="Enter reason.."
-        value={reason}
-        onChangeText={setReason}
-        multiline={true}
-      />
+    <ScrollView>
+      <View style={styles.container}>
+        <Text style={styles.label}>Reason for Leave</Text>
+        <TextInput
+          style={styles.textInput}
+          placeholder="Enter reason.."
+          value={reason}
+          onChangeText={setReason}
+          multiline={true}
+          onChange={handleReasonChange}
+        />
 
-      <Text style={styles.label}>Leave Type</Text>
-      <Dropdown
-        style={[styles.dropdown, isFocus && {borderColor: '#ff5a5f'}]}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        inputSearchStyle={styles.inputSearchStyle}
-        iconStyle={styles.iconStyle}
-        data={leaveOptions}
-        search
-        maxHeight={300}
-        labelField="label"
-        valueField="value"
-        placeholder={'Select Leave Type'}
-        searchPlaceholder="Search..."
-        value={leaveType}
-        onFocus={() => setIsFocus(true)}
-        onBlur={() => setIsFocus(false)}
-        onChange={item => {
-          setLeaveType(item.value);
-          setIsFocus(false);
-        }}
-      />
-
-      <Text style={styles.label}>From</Text>
-      <TouchableOpacity
-        onPress={() => setShowFromPicker(true)}
-        style={styles.datePicker}>
-        <Text style={styles.dateText}>{startDate.toLocaleDateString()}</Text>
-        <Icon name="calendar-month-outline" size={20} color="#ff5a5f" />
-      </TouchableOpacity>
-      {showFromPicker && (
-        <DateTimePicker
-          value={startDate}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowFromPicker(Platform.OS === 'ios');
-            if (selectedDate) {
-              setStartDate(selectedDate);
-            }
+        <Text style={styles.label}>Leave Type</Text>
+        <Dropdown
+          style={[styles.dropdown, isFocus && {borderColor: '#ff5a5f'}]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={leaveOptions}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder={'Select Leave Type'}
+          searchPlaceholder="Search..."
+          value={leaveType}
+          onFocus={() => setIsFocus(true)}
+          onBlur={() => setIsFocus(false)}
+          onChange={item => {
+            setLeaveType(item.value);
+            setIsFocus(false);
           }}
         />
-      )}
 
-      <Text style={styles.label}>To</Text>
-      <TouchableOpacity
-        onPress={() => setShowToPicker(true)}
-        style={styles.datePicker}>
-        <Text style={styles.dateText}>{endDate.toLocaleDateString()}</Text>
-        <Icon name="calendar-month-outline" size={20} color="#ff5a5f" />
-      </TouchableOpacity>
-      {showToPicker && (
-        <DateTimePicker
-          value={endDate}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowToPicker(Platform.OS === 'ios');
-            if (selectedDate) {
-              setendDate(selectedDate);
-            }
-          }}
-        />
-      )}
-
-      <TouchableOpacity
-        style={[styles.applyButton, loading && {opacity: 0.7}]}
-        disabled={loading}
-        onPress={handleSubmit}>
-        {loading ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Text style={styles.applyText}>Apply</Text>
+        <Text style={styles.label}>From</Text>
+        <TouchableOpacity
+          onPress={() => setShowFromPicker(true)}
+          style={styles.datePicker}>
+          <Text style={styles.dateText}>{startDate.toLocaleDateString()}</Text>
+          <Icon name="calendar-month-outline" size={20} color="#be012f" />
+        </TouchableOpacity>
+        {showFromPicker && (
+          <DateTimePicker
+            value={startDate}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowFromPicker(Platform.OS === 'ios');
+              if (selectedDate) {
+                setStartDate(selectedDate);
+              }
+            }}
+          />
         )}
-      </TouchableOpacity>
-    </View>
+
+        <Text style={styles.label}>To</Text>
+        <TouchableOpacity
+          onPress={() => setShowToPicker(true)}
+          style={styles.datePicker}>
+          <Text style={styles.dateText}>{endDate.toLocaleDateString()}</Text>
+          <Icon name="calendar-month-outline" size={20} color="#be012f" />
+        </TouchableOpacity>
+        {showToPicker && (
+          <DateTimePicker
+            value={endDate}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowToPicker(Platform.OS === 'ios');
+              if (selectedDate) {
+                setendDate(selectedDate);
+              }
+            }}
+          />
+        )}
+
+        <TouchableOpacity
+          style={[styles.applyButton, loading && {opacity: 0.7}]}
+          disabled={loading}
+          onPress={handleSubmit}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.applyText}>Apply</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -274,7 +285,7 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     marginTop: 24,
-    backgroundColor: '#ff5a5f',
+    backgroundColor: '#be012f',
     paddingVertical: 14,
     borderRadius: 30,
     alignItems: 'center',

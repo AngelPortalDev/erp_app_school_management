@@ -34,19 +34,6 @@ const TeacherProfileScreen = ({navigation}) => {
             try {
               await AsyncStorage.removeItem('token');
               dispatch(logout());
-              Alert.alert(
-                'Success',
-                'Logout Successful!',
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => {
-                      navigation.getParent()?.replace('Login');
-                    },
-                  },
-                ],
-                { cancelable: false }
-              );
             } catch (error) {
               Alert.alert('Error', 'Something went wrong while logging out.');
             }
@@ -56,11 +43,18 @@ const TeacherProfileScreen = ({navigation}) => {
       { cancelable: true }
     );
   };
-  
 
+
+  // useEffect(() => {
+  //   dispatch(getTeacherProfile());
+  // }, [dispatch]);
   useEffect(() => {
-    dispatch(getTeacherProfile());
-  }, [dispatch]);
+    const unsubscribe = navigation.addListener('focus', () => {
+      dispatch(getTeacherProfile());
+    });
+    return unsubscribe;
+  }, [navigation, dispatch]);
+
 
   return (
     <ScrollView
@@ -74,7 +68,7 @@ const TeacherProfileScreen = ({navigation}) => {
           <Image
             source={{
               uri: profile?.profile_picture
-                ? `http://192.168.1.46:1000${profile.profile_picture}`
+                ? `http://192.168.1.14:1000/${profile.profile_picture}`
                 : teacherImage,
             }}
             style={styles.profileImage}
@@ -146,8 +140,8 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    borderWidth: 4,
-    borderColor: '#ff5a5f',
+    borderWidth: 3,
+    borderColor: '#be012f',
     marginBottom: 15,
   },
   teacherName: {
@@ -162,7 +156,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   editProfileButton: {
-    backgroundColor: '#ff5a5f',
+    backgroundColor: '#bc0f2c',
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 25,
@@ -210,7 +204,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
-    backgroundColor: '#ff5a5f',
+    backgroundColor: '#bc0f2c',
     paddingVertical: 10,
     borderRadius: 15,
     borderWidth: 1,

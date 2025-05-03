@@ -12,6 +12,7 @@ import {BASE_URL} from '@env';
 import {useSelector, useDispatch} from 'react-redux';
 import {getTeacherProfile} from '../../store/profileSlice';
 import {Buffer} from 'buffer';
+import {FormateDate} from '../../helper/FormateDate';
 
 const TimeTable = () => {
   const [selectedDate, setSelectedDate] = useState('');
@@ -104,7 +105,7 @@ const TimeTable = () => {
         />
       </View>
 
-      <Text style={styles.dateTitle}>Schedule for {selectedDate}</Text>
+      <Text style={styles.dateTitle}>Schedule for {FormateDate(selectedDate)}</Text>
 
       {loading ? (
         <ActivityIndicator size="large" color="#4a90e2" />

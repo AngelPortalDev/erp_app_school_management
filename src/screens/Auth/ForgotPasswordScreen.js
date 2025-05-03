@@ -1,27 +1,39 @@
-import React, { useState,useEffect } from 'react';
-import { View, StyleSheet, Text, TextInput, TouchableOpacity, Alert, SafeAreaView,Image } from 'react-native';
-import Axios, { all } from 'axios';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  SafeAreaView,
+  Image,
+  ScrollView,
+} from 'react-native';
+import Axios, {all} from 'axios';
 import {BASE_URL} from '@env';
-
 
 // console.log("BASE_URL",BASE_URL);
 const ForgotPasswordScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
 
   const handleResetPassword = async () => {
-
-    // if (!email) {
-    //   Alert.alert('Error', 'Please enter your email address');
-    //   return;
-    // }
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append('email', email);
-     const response = await Axios.post(`${BASE_URL}/forgot-password/`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+      const response = await Axios.post(
+        `${BASE_URL}/forgot-password/`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         },
-      });
+      );
       Alert.alert(
         'Success',
         response.data.message || 'Check your email for a reset link.',
@@ -30,11 +42,17 @@ const ForgotPasswordScreen = ({navigation}) => {
             text: 'OK',
             onPress: () => navigation.navigate('Login'),
           },
-        ]
+        ],
       );
     } catch (err) {
       if (err.response) {
-        console.log(err.response,'errrrrrrr');
+        if (err.response) {
+          Alert.alert(
+            'Error',
+            err.response.data.message || 'Something went wrong.',
+          );
+          return;
+        }
       } else {
         console.log('Non-error thrown:', err);
       }
@@ -46,34 +64,46 @@ const ForgotPasswordScreen = ({navigation}) => {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.card}>
-         <Image source={require('../../../assets/AuthenticationImages/ForgotPass.png')} style={styles.image} />
-        <Text style={styles.heading}>Forgot Password?</Text>
-        <Text style={styles.subText}>Enter your email to receive a reset link</Text>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            placeholder="Enter your email"
-            placeholderTextColor="#aaa"
-            style={styles.textInput}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
+    <ScrollView>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.card}>
+          <Image
+            source={require('../../../assets/AuthenticationImages/ForgotPass.jpg')}
+            style={styles.image}
           />
+          <Text style={styles.heading}>Forgot Password?</Text>
+          <Text style={styles.subText}>
+            Enter your email to receive a reset link
+          </Text>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              placeholder="Enter your email"
+              placeholderTextColor="#aaa"
+              style={styles.textInput}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+
+          <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
+            <Text style={styles.buttonText}>Reset Password</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.footerText}>
+            Remembered your password?{' '}
+            <Text
+              style={styles.linkText}
+              onPress={() => navigation.navigate('Login')}>
+              Log In
+            </Text>
+          </Text>
         </View>
-
-        <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
-          <Text style={styles.buttonText}>Reset Password</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.footerText}>
-          Remembered your password? <Text style={styles.linkText} onPress={()=>navigation.navigate('Login')}>Log In</Text>
-        </Text>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ScrollView>
   );
 };
 
@@ -82,7 +112,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor:'#fff',
+    backgroundColor: '#fff',
   },
   card: {
     backgroundColor: '#fff',
@@ -96,7 +126,7 @@ const styles = StyleSheet.create({
     // shadowRadius: 12,
     // elevation: 6,
   },
-  image:{
+  image: {
     width: 250,
     height: 250,
     resizeMode: 'contain',

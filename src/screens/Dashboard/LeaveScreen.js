@@ -7,21 +7,24 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  ActivityIndicator
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Axios from 'axios';
 import {BASE_URL} from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {FormateDate} from '../../helper/FormateDate';
 
 const LeaveScreen = ({navigation, route}) => {
   const [leaveData, setLeaveData] = useState([]);
   const [leaveApplication, setLeaveApplication] = useState([]);
-  console.log('route', route.params?.leave_status);
+  const [loading,setLoading] = useState(false);
 
   useEffect(() => {
     const getLeaveData = async () => {
-      console.log('get leave data');
+     
       try {
+        setLoading(true)
         console.log('adding...');
         const token = await AsyncStorage.getItem('token');
         if (!token) {
@@ -35,9 +38,23 @@ const LeaveScreen = ({navigation, route}) => {
         });
         console.log('response.data', response);
         setLeaveData(response.data.leavedata.leave_types);
-        setLeaveApplication(response.data.leavedata.leave_applications);
+        setLeaveApplication(response.data.leavedata.leave_applications.map(app=>({
+          ...app,
+          start_date:FormateDate(app.start_date),
+          end_date: FormateDate(app.end_date),
+        })));
       } catch (err) {
+        if (err.response) {
+          // Server responded with a status code out of 2xx range
+          console.log('Error Status:', err.response.status);
+          console.log('Error Headers:', err.response.headers);
+          console.log('Error Data:', err.response.data);
+        }else if(err.request){
+          console.log('Request Error:', err.request);
+        }
         console.log(err, 'err');
+      }finally {
+        setLoading(false);
       }
     };
     getLeaveData();
@@ -48,144 +65,154 @@ const LeaveScreen = ({navigation, route}) => {
     0,
   );
 
+  if (loading) {
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="#1E90FF" />
+      </View>
+    );
+  }
+
   // const getTotalLeaveCount =
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Summary */}
-        <View style={styles.summaryCard}>
-          <Icon name="chart-donut" size={28} color="#1E90FF" />
-          <View style={{marginLeft: 12}}>
-            <Text style={styles.summaryTitle}>Total Leaves Remaining</Text>
-            <Text style={styles.summaryValue}>{totalMaxDays}</Text>
+    <ScrollView>
+      <View style={styles.container}>
+        <View contentContainerStyle={styles.scrollContent}>
+          {/* Summary */}
+          <View style={styles.summaryCard}>
+            <Icon name="chart-donut" size={28} color="#1E90FF" />
+            <View style={{marginLeft: 12}}>
+              <Text style={styles.summaryTitle}>Total Leaves Remaining</Text>
+              <Text style={styles.summaryValue}>{totalMaxDays}</Text>
+            </View>
+          </View>
+
+          {/* Leave Type Cards */}
+          <Text style={styles.header}>Your Leave Balance</Text>
+          <View style={styles.cardsContainer}>
+            {leaveData.map((leave, index) => {
+              const iconMap = {
+                'Casual Leave': 'beach',
+                'Paid Leave': 'wallet',
+                'Sick Leave': 'hospital-box',
+                'Maternity Leave': 'baby-carriage',
+              };
+
+              const colorMap = {
+                'Casual Leave': '#4ECDC4',
+                'Paid Leave': '#FFD93D',
+                'Sick Leave': '#FF6B6B',
+                'Maternity Leave': '#A29BFE',
+              };
+
+              const booked = leave.used;
+              const balance = leave.max_days;
+              const total = booked + balance;
+              const progress = total > 0 ? (booked / total) * 100 : 0;
+
+              return (
+                <View
+                  key={index}
+                  style={[
+                    styles.leaveCard,
+                    {borderLeftColor: colorMap[leave.name] || '#ccc'},
+                  ]}>
+                  <View style={styles.leaveHeader}>
+                    <Icon
+                      name={iconMap[leave.name] || 'calendar'}
+                      size={28}
+                      color={colorMap[leave.name] || '#333'}
+                    />
+                    <Text style={styles.leaveTitle}>{leave.name}</Text>
+                  </View>
+
+                  <View style={styles.progressBackground}>
+                    <View
+                      style={[
+                        styles.progressBar,
+                        {
+                          width: `${progress}%`,
+                          backgroundColor: colorMap[leave.name] || '#999',
+                        },
+                      ]}
+                    />
+                  </View>
+
+                  <View style={styles.leaveStats}>
+                    <Text style={styles.leaveStatText}>
+                      Booked: {booked} Days
+                    </Text>
+                    <Text style={styles.leaveStatText}>
+                      Balance: {balance} Days
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Leaves View */}
+          <View style={styles.applicationContainer}>
+            <Text style={styles.applicationHeader}>
+              Recent Leave Applications
+            </Text>
+
+            {leaveApplication.length === 0 ? (
+              <Text style={styles.noApplicationText}>
+                No leave applications found.
+              </Text>
+            ) : (
+              leaveApplication.map((data, index) => (
+                <View key={index} style={styles.applicationCard}>
+                  <View style={styles.applicationRow}>
+                    <Text style={styles.applicationType}>
+                      {data.leave_type} Leave
+                    </Text>
+                    <Text style={styles.applicationDays}>
+                      {route.params?.leave_days
+                        ? `${route.params.leave_days} Days`
+                        : ''}
+                    </Text>
+                  </View>
+
+                  <Text style={styles.applicationDate}>
+                    {data.start_date} - {data.end_date}
+                  </Text>
+
+                  <View style={styles.statusBadgeContainer}>
+                    <Text
+                      style={[
+                        styles.statusBadgeCommon,
+                        data.status === 'Approved'
+                          ? styles.statusApproved
+                          : data.status === 'Rejected'
+                          ? styles.statusRejected
+                          : styles.statusPending,
+                      ]}>
+                      {data.status}
+                    </Text>
+                  </View>
+                </View>
+              ))
+            )}
           </View>
         </View>
 
-        {/* Leave Type Cards */}
-        <Text style={styles.header}>Your Leave Balance</Text>
-        <View style={styles.cardsContainer}>
-          {leaveData.map((leave, index) => {
-            const iconMap = {
-              'Casual Leave': 'beach',
-              'Paid Leave': 'wallet',
-              'Sick Leave': 'hospital-box',
-              'Maternity Leave': 'baby-carriage',
-            };
-
-            const colorMap = {
-              'Casual Leave': '#4ECDC4',
-              'Paid Leave': '#FFD93D',
-              'Sick Leave': '#FF6B6B',
-              'Maternity Leave': '#A29BFE',
-            };
-
-            const booked = leave.used;
-            const balance = leave.max_days;
-            const total = booked + balance;
-            const progress = total > 0 ? (booked / total) * 100 : 0;
-
-            return (
-              <View
-                key={index}
-                style={[
-                  styles.leaveCard,
-                  {borderLeftColor: colorMap[leave.name] || '#ccc'},
-                ]}>
-                <View style={styles.leaveHeader}>
-                  <Icon
-                    name={iconMap[leave.name] || 'calendar'}
-                    size={28}
-                    color={colorMap[leave.name] || '#333'}
-                  />
-                  <Text style={styles.leaveTitle}>{leave.name}</Text>
-                </View>
-
-                <View style={styles.progressBackground}>
-                  <View
-                    style={[
-                      styles.progressBar,
-                      {
-                        width: `${progress}%`,
-                        backgroundColor: colorMap[leave.name] || '#999',
-                      },
-                    ]}
-                  />
-                </View>
-
-                <View style={styles.leaveStats}>
-                  <Text style={styles.leaveStatText}>
-                    Booked: {booked} Days
-                  </Text>
-                  <Text style={styles.leaveStatText}>
-                    Balance: {balance} Days
-                  </Text>
-                </View>
-              </View>
-            );
-          })}
-        </View>
-
-        {/* Leaves View */}
-        <View style={styles.applicationContainer}>
-          <Text style={styles.applicationHeader}>
-            Recent Leave Applications
-          </Text>
-
-          {leaveApplication.length === 0 ? (
-            <Text style={styles.noApplicationText}>
-              No leave applications found.
-            </Text>
-          ) : (
-            leaveApplication.map((data, index) => (
-              <View key={index} style={styles.applicationCard}>
-                <View style={styles.applicationRow}>
-                  <Text style={styles.applicationType}>
-                    {data.leave_type} Leave
-                  </Text>
-                  <Text style={styles.applicationDays}>
-                    {route.params?.leave_days
-                      ? `${route.params.leave_days} Days`
-                      : ''}
-                  </Text>
-                </View>
-
-                <Text style={styles.applicationDate}>
-                  {data.start_date} - {data.end_date}
-                </Text>
-
-                <View style={styles.statusBadgeContainer}>
-                  <Text
-                    style={[
-                      styles.statusBadgeCommon,
-                      data.status === 'Approved'
-                        ? styles.statusApproved
-                        : data.status === 'Rejected'
-                        ? styles.statusRejected
-                        : styles.statusPending,
-                    ]}>
-                    {data.status}
-                  </Text>
-                </View>
-              </View>
-            ))
-          )}
-        </View>
-      </ScrollView>
-
-      {/* Apply Button */}
-      <TouchableOpacity style={styles.button}>
-        <Icon
-          name="calendar-plus"
-          size={20}
-          color="#fff"
-          style={{marginRight: 10}}
-        />
-        <TouchableOpacity onPress={() => navigation.navigate('ApplyLeave')}>
-          <Text style={styles.buttonText}>Apply for Leave </Text>
+        {/* Apply Button */}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('ApplyLeave')}>
+          <Icon
+            name="calendar-plus"
+            size={20}
+            color="#fff"
+            style={{marginRight: 10}}
+          />
+            <Text style={styles.buttonText}>Apply for Leave </Text>
         </TouchableOpacity>
-      </TouchableOpacity>
-    </View>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -199,6 +226,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F9FC',
     paddingTop: 20,
     paddingHorizontal: 16,
+    paddingBottom: 50,
   },
   scrollContent: {
     paddingBottom: 80,
@@ -290,7 +318,7 @@ const styles = StyleSheet.create({
     bottom: 10,
     left: 16,
     right: 16,
-    backgroundColor: '#ff5a5f',
+    backgroundColor: '#be012f',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

@@ -11,7 +11,7 @@ const ProfileStack = () => {
       <Stack.Screen
         name="TeacherProfile"
         component={TeacherProfileScreen}
-        options={{title: 'My Profile'}}
+        options={{title: 'My Profile', headerShown:true,headerBackVisible:false}}
       />
       <Stack.Screen
         name="EditTeacherProfile"

@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useState,useMemo} from 'react';
+import React, {useEffect, useState, useMemo} from 'react';
 import {
   View,
   Text,
@@ -16,107 +17,116 @@ import {useSelector, useDispatch} from 'react-redux';
 import {getTeacherProfile} from '../../store/profileSlice';
 import {Buffer} from 'buffer';
 
-
-
-
 const AssignClassesScreen = () => {
-const {profile} = useSelector(state => state.teacher);
-const dispatch = useDispatch();
-const userProfileId = profile?.user || '';
+  const {profile} = useSelector(state => state.teacher);
+  const dispatch = useDispatch();
+  const userProfileId = profile?.user || '';
 
-const [isLoading, setIsLoading] = useState(true);
-const [classData, setClassData] = useState([]);
-
-// convert teacher id into an base 64
-const teacherId = useMemo(() => {
-  if (userProfileId) {
-    return Buffer.from(String(userProfileId)).toString('base64');
-  }
-  return '';
-}, [userProfileId]);
-
-// get teacher profile
-useEffect(() => {
-  if (!profile) {
-    dispatch(getTeacherProfile());
-  } else {
-    setIsLoading(false);
-  }
-}, [profile, dispatch]);
-
-
-const getClassesData = async () => {
-  try {
-    const token = await AsyncStorage.getItem('token');
-    if (!token || !teacherId) {
-      return;
+  const [isLoading, setIsLoading] = useState(true);
+  const [classData, setClassData] = useState([]);
+  const [loading,setLoading] = useState(false);
+  // convert teacher id into an base 64
+  const teacherId = useMemo(() => {
+    if (userProfileId) {
+      return Buffer.from(String(userProfileId)).toString('base64');
     }
+    return '';
+  }, [userProfileId]);
 
-    const response = await Axios.get(`${BASE_URL}/assginclass/${teacherId}/`, {
-      headers: { Authorization: `Token ${token}` },
-    });
-    const mappedClassData = response.data.data.map(item => ({
-      course: item.course,
-      classes: item.classes.split(', '),
-      modules: item.modules.split(', '),
-      intake: item.intakemonth,
-    }));
-    setClassData(mappedClassData);
-  } catch (err) {
-    console.log(err, 'err');
+  // get teacher profile
+  useEffect(() => {
+    if (!profile) {
+      dispatch(getTeacherProfile());
+    } else {
+      setIsLoading(false);
+    }
+  }, [profile, dispatch]);
+
+  const getClassesData = async () => {
+    try {
+      setLoading(true)
+      const token = await AsyncStorage.getItem('token');
+      if (!token || !teacherId) {
+        return;
+      }
+
+      const response = await Axios.get(
+        `${BASE_URL}/assginclass/${teacherId}/`,
+        {
+          headers: {Authorization: `Token ${token}`},
+        },
+      );
+      const mappedClassData = response.data.data.map(item => ({
+        course: item.course,
+        classes: item.classes.split(', '),
+        modules: item.modules.split(', '),
+        intake: item.intakemonth,
+      }));
+      setClassData(mappedClassData);
+    } catch (err) {
+      console.log(err, 'err');
+      
+    }finally{
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isLoading) {
+      getClassesData();
+    }
+  }, [isLoading]);
+
+  const renderItem = ({item}) => {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.courseTitle}>{item.course}</Text>
+
+        <View style={styles.chipContainer}>
+          {item.classes.map((cls, idx) => (
+            <View key={idx} style={styles.chip}>
+              <Text style={styles.chipText}>{cls.toString()}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Modules</Text>
+          {item.modules.map((mod, idx) => (
+            <Text key={idx} style={styles.moduleText}>
+              • {mod}
+            </Text>
+          ))}
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.intakeBadge}>{item.intake.toString()}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <ActivityIndicator size="large" color="#1E90FF" />
+      </View>
+    );
   }
-};
-
-useEffect(() => {
-  if (!isLoading) {
-    getClassesData();
-  }
-}, [isLoading]);
-
-const renderItem = ({item}) => {
-  return (
-    <View style={styles.card}>
-      <Text style={styles.courseTitle}>{item.course}</Text>
-
-      <View style={styles.chipContainer}>
-        {item.classes.map((cls, idx) => (
-          <View key={idx} style={styles.chip}>
-            <Text style={styles.chipText}>{cls}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Modules</Text>
-        {item.modules.map((mod, idx) => (
-          <Text key={idx} style={styles.moduleText}>
-            • {mod}
-          </Text>
-        ))}
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.intakeBadge}>{item.intake}</Text>
-      </View>
-    </View>
-  );
-};
-
-
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Your Assigned Classes</Text>
       {isLoading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#2b61ff" /> {/* Customize color and size */}
+          <ActivityIndicator size="large" color="#2b61ff" />
           <Text style={styles.loaderText}>Loading your classes...</Text>
         </View>
       ) : (
         <FlatList
           data={classData}
-          keyExtractor={item => item.course + item.intake}
+          keyExtractor={(item, index) => item.course + item.intake + index}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 30 }}
+          contentContainerStyle={{paddingBottom: 30}}
           showsVerticalScrollIndicator={false}
         />
       )}

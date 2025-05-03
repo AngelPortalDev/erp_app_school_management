@@ -142,7 +142,7 @@ const App = () => {
 
   return (
     <NavigationContainer ref={navigationRef}>
-      <RootStack.Navigator screenOptions={{headerShown: false}}>
+      {/* <RootStack.Navigator screenOptions={{headerShown: false}}>
         {isLoggedIn ? (
           <>
             <RootStack.Screen name="BottomTab" component={BottomTab} />
@@ -160,6 +160,9 @@ const App = () => {
         ) : (
           <RootStack.Screen name="AuthStack" component={AuthStack} />
         )}
+      </RootStack.Navigator> */}
+      <RootStack.Navigator>
+        {isLoggedIn ? <RootStack.Screen name="BottomTab" component={BottomTab} options={{headerShown:false}}/> : <RootStack.Screen name="AuthStack" component={AuthStack} options={{headerShown:false}} />}
       </RootStack.Navigator>
     </NavigationContainer>
   );

@@ -25,7 +25,7 @@ const AnnounceMentScreen = ({ navigation }) => {
       setAnnouncements(response.data.announcements);
       setLoading(false);
     } catch (err) {
-      console.log(err, 'error');
+      console.log(err, 'error')
     }
   };
 

@@ -26,7 +26,14 @@ export const getTeacherProfile = createAsyncThunk(
             // console.log('getTeacherProfileData',response)
             return response.data;
         }catch(err){
-            console.log('Failed to load...');
+            if(err.response){
+                console.log('Error Status:', err.response.status);
+                console.log('Error Headers:', err.response.headers)
+                console.log('Error Data:', err.response.data);
+            }else if(err.request){
+                console.log('request error',err.request);
+            }
+            console.log('Failed to load...')
            return thunkAPI.rejectWithValue(err.response.data.message || 'failed To fecth Profile');
         }
     }
@@ -47,24 +54,24 @@ export const updateTeacherProfile = createAsyncThunk(
             formData.append('contact_number', updatedData.contact_number);
             formData.append('username', updatedData.username);
 
-            // if (updatedData.profile_picture) {
-            //     const uri = updatedData.profile_picture;
-            //     const fileName = uri.split('/').pop();
-            //     const fileType = fileName?.split('.').pop();
+            if (updatedData.profile_picture) {
+                const uri = updatedData.profile_picture;
+                const fileName = uri.split('/').pop();
+                const fileType = fileName?.split('.').pop();
 
-            //     formData.append('profile_picture', {
-            //       uri,
-            //       name: fileName || 'profile.jpg',
-            //       type: `image/${fileType || 'jpeg'}`,
-            //     });
-            //   }
+                formData.append('profile_picture', {
+                  uri,
+                  name: fileName || 'profile.jpg',
+                  type: `image/${fileType || 'jpeg'}`,
+                });
+              }
               const response = await Axios.put(`${BASE_URL}/profile/teacher/`, formData, {
                 headers: {
                   Authorization: `Token ${token}`,
                   'Content-Type': 'multipart/form-data',
                 },
               });
-            // console.log('response',response);
+            console.log('response',response);
             return response.data;
         }catch(err){
             console.log('Full error response:', err?.response?.data || err.message);

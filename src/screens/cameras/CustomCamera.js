@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState,useLayoutEffect} from 'react';
 import {
   View,
   StyleSheet,
@@ -26,6 +26,20 @@ const CustomCamera = ({navigation, route}) => {
   const {hasPermission, requestPermission} = useCameraPermission();
   const [photoUri, setPhotoUri] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // To hide Bottom tab
+  useLayoutEffect(()=>{
+    const parentNav = navigation.getParent();
+    parentNav?.setOptions({
+      tabBarStyle: { display: 'none' },
+    });
+  // Restore it on unmount
+  return () => {
+    parentNav?.setOptions({
+      tabBarStyle: { display: 'flex' },
+    });
+  };
+  },[navigation]);
 
   useEffect(() => {
     const checkPermissions = async () => {
@@ -95,7 +109,8 @@ const CustomCamera = ({navigation, route}) => {
             },
           );
 
-          console.log('response check in / checkout', response);
+          console.log('response check in / checkout', response)
+
           setLoading(false); 
           console.log('formData', formData);
 
@@ -105,7 +120,7 @@ const CustomCamera = ({navigation, route}) => {
               index: 0,
               routes: [
                 {
-                  name: 'TeacherDashboard',
+                  name: 'HomeScreen',
                   params: {
                     checkIn: route.params?.action === 'checkin',
                     checkOut: route.params?.action === 'checkout',
@@ -118,7 +133,7 @@ const CustomCamera = ({navigation, route}) => {
             Alert.alert('Error', 'Unable to mark attendance');
           }
         } catch (e) {
-          setLoading(false); 
+          setLoading(false);
           if (e.response) {
             // Server responded with a status code outside 2xx
             console.error('Server Error:', e.response.data);
@@ -128,6 +143,7 @@ const CustomCamera = ({navigation, route}) => {
           } else if (e.request) {
             // Request was made but no response received
             console.error('No Response:', e.request);
+
             Alert.alert('Error', 'No response from server');
           } else {
             // Something else happened

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+
 const AnnouncementDetails = ({ route }) => {
 
     const { announcement } = route.params;

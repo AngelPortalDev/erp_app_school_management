@@ -21,7 +21,7 @@ export const loginUser = createAsyncThunk(
       await AsyncStorage.setItem('token', data.token);
       return data;
     } catch (err) {
-      Alert.alert('Login Failed', 'Invalid Username or password');
+      Alert.alert('Login Failed', 'Please check your credentials and try again');
       console.log(err);
       return thunkAPI.rejectWithValue(
         err.response.data.message || 'Login failed',
