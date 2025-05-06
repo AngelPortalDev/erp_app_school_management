@@ -10,6 +10,7 @@ import {
   Image,
   ActivityIndicator
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Axios from 'axios';
@@ -100,9 +101,14 @@ const TeacherDashboard = ({navigation}) => {
           </View>
 
           {/* Single Announcement Item */}
-          {announcements.map((item,index) => (
+          {announcements.slice(0,3).map((item,index) => (
             <View style={styles.announcementItem} key={index}>
-              <View style={styles.avatar} />
+              {/* <View style={styles.avatar} /> */}
+              <Ionicons
+              name="person-circle-sharp"
+              size={42}
+              style={styles.avatar}
+            />
               <TouchableOpacity
                 style={styles.announcementContent}
                 onPress={() => navigation.navigate('AnnouncementDetails',{announcement:item})}>

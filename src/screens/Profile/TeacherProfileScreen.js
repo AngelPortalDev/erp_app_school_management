@@ -13,6 +13,7 @@ import {logout} from '../../store/authSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getTeacherProfile} from '../../store/profileSlice';
+import {BASE_URL_NEW} from '@env';
 
 // Sample teacher profile image
 const teacherImage =
@@ -68,7 +69,7 @@ const TeacherProfileScreen = ({navigation}) => {
           <Image
             source={{
               uri: profile?.profile_picture
-                ? `http://192.168.1.14:1000/${profile.profile_picture}`
+                ? `${BASE_URL_NEW}/${profile.profile_picture}`
                 : teacherImage,
             }}
             style={styles.profileImage}

@@ -14,7 +14,7 @@ import {
   getTeacherProfile,
   updateTeacherProfile,
 } from '../../store/profileSlice';
-import {BASE_URL} from '@env';
+import {BASE_URL,BASE_URL_NEW} from '@env';
 import {useDispatch, useSelector} from 'react-redux';
 
 const teacherImage =
@@ -60,7 +60,7 @@ const EditTeacherProfileScreen = ({navigation}) => {
       setUsername(profile.username || '');
       setImageUri(
         profile.profile_picture
-          ? `http://192.168.1.14:1000${profile.profile_picture}`
+          ? `${BASE_URL_NEW}/${profile.profile_picture}`
           : `${teacherImage}`,
       );
     }
