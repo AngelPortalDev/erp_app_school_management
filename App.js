@@ -15,12 +15,16 @@ import {navigationRef} from './src/helper/NavigationService';
 import NotificationsScreen from './src/screens/Notifications/NotificationsScreen';
 import CustomCamera from './src/screens/cameras/CustomCamera';
 import TeacherDashboard from './src/screens/Dashboard/TeacherDashboard';
+import notifee, {AndroidImportance, EventType} from '@notifee/react-native';
+import StudentTab from './src/navigation/StudentTab';
 
 // import { useState } from 'react';
 const RootStack = createNativeStackNavigator();
 
 const App = () => {
   const {isLoggedIn} = useSelector(state => state.auth);
+  const {user_type} = useSelector(state => state.auth);
+  const getRoleofPerson = user_type;
   // console.log('isLogged in', isLoggedIn);
 
   // useEffect(() => {
@@ -96,16 +100,40 @@ const App = () => {
   // Listen for notifications when the app is in the foreground
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      // Extract notification data
-      const title =
-        remoteMessage?.data?.title || remoteMessage?.notification?.title;
-      const body =
-        remoteMessage?.data?.body || remoteMessage?.notification?.body;
-
-      Alert.alert(title, body);
+      // Display local notification (system-style)
+      await notifee.displayNotification({
+        title: remoteMessage.notification?.title,
+        body: remoteMessage.notification?.body,
+        android: {
+          channelId: 'default',
+          pressAction: {
+            id: 'default',
+          },
+        },
+        data: remoteMessage.data,
+      });
     });
-
     return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    async function createChannel() {
+      await notifee.createChannel({
+        id: 'default',
+        name: 'Default Channel',
+        importance: AndroidImportance.HIGH,
+      });
+    }
+    createChannel();
+  }, []);
+
+  useEffect(() => {
+    return notifee.onForegroundEvent(({type, detail}) => {
+      if (type === EventType.PRESS) {
+        // Optional: use screen from data
+        navigationRef.navigate('NotificationsScreen');
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -142,29 +170,44 @@ const App = () => {
 
   return (
     <NavigationContainer ref={navigationRef}>
-      {/* <RootStack.Navigator screenOptions={{headerShown: false}}>
-        {isLoggedIn ? (
-          <>
-            <RootStack.Screen name="BottomTab" component={BottomTab} />
+    <RootStack.Navigator>
+      {isLoggedIn ? (
+        <>
+          {getRoleofPerson == 'teacher' ? (
+            <>
+              <RootStack.Screen
+                name="BottomTab"
+                component={BottomTab}
+                options={{headerShown: false}}
+              />
+              <RootStack.Screen
+                name="NotificationsScreen"
+                component={NotificationsScreen}
+                options={{headerShown: true, title: 'Notifications'}}
+              />
+            </>
+          ) : (
             <RootStack.Screen
-              name="NotificationsScreen"
-              component={NotificationsScreen}
-              options={{title: 'Notifications', headerShown: true}}
+              name="StudentTab"
+              component={StudentTab}
+              options={{headerShown: true, title: 'StudentTab'}}
             />
-            <RootStack.Screen name="CustomCamera" component={CustomCamera} />
-            <RootStack.Screen
-              name="TeacherDashboard"
-              component={TeacherDashboard}
-            />
-          </>
-        ) : (
-          <RootStack.Screen name="AuthStack" component={AuthStack} />
-        )}
-      </RootStack.Navigator> */}
-      <RootStack.Navigator>
-        {isLoggedIn ? <RootStack.Screen name="BottomTab" component={BottomTab} options={{headerShown:false}}/> : <RootStack.Screen name="AuthStack" component={AuthStack} options={{headerShown:false}} />}
-      </RootStack.Navigator>
-    </NavigationContainer>
+          )}
+        </>
+      ) : (
+        <RootStack.Screen
+          name="AuthStack"
+          component={AuthStack}
+          options={{headerShown: false}}
+        />
+      )}
+      {/* <RootStack.Screen
+      name="StudentTab"
+      component={StudentTab}
+      options={{headerShown:false}}
+      /> */}
+    </RootStack.Navigator>
+  </NavigationContainer>
   );
 };
 export default App;

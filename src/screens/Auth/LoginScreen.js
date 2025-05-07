@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
+  RefreshControl
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as Yup from 'yup';
@@ -23,6 +24,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({navigation}) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [refreshing,isRefreshing] = useState(false);
+  const [formKey, setFormKey] = useState(0);
 
   const dispatch = useDispatch();
   const {user, error, loading} = useSelector(state => state.auth);
@@ -73,8 +76,17 @@ const LoginScreen = ({navigation}) => {
     return unsubscribe;
   }, []);
 
+
+  const onRefresh = useCallback(()=>{
+    isRefreshing(true);
+    setFormKey(prevKey => prevKey + 1);
+    setTimeout(()=>{
+      isRefreshing(false);
+    },1000);
+  },[]);
+
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView contentContainerStyle={styles.scrollContainer} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
       <SafeAreaView style={styles.container}>
         <View style={styles.card}>
           <Image
@@ -88,6 +100,7 @@ const LoginScreen = ({navigation}) => {
           <Formik
             initialValues={initialFormValues}
             validationSchema={validationSchema}
+            key={formKey}
             onSubmit={handleLogin}>
             {({
               handleChange,

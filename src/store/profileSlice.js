@@ -65,7 +65,7 @@ export const updateTeacherProfile = createAsyncThunk(
                   type: `image/${fileType || 'jpeg'}`,
                 });
               }
-              const response = await Axios.put(`${BASE_URL}/profile/teacher/`, formData, {
+              const response = await Axios.put(`${BASE_URL}/profile/user/`, formData, {
                 headers: {
                   Authorization: `Token ${token}`,
                   'Content-Type': 'multipart/form-data',
